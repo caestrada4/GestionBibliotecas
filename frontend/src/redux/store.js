@@ -1,5 +1,5 @@
 import { createStore, applyMiddleware, combineReducers } from 'redux';
-import thunk from 'redux-thunk';
+import { thunk, withExtraArgument } from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import bookReducer from './reducers/bookReducer';
 import userReducer from './reducers/userReducer';
