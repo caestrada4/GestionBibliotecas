@@ -4,6 +4,7 @@
   xmlns:tns="http://example.com/LoanService/"
   targetNamespace="http://example.com/LoanService/">
   
+  <!-- Operaciones de Préstamos -->
   <message name="CreateLoanRequest">
     <part name="userId" type="xsd:int"/>
     <part name="bookId" type="xsd:int"/>
@@ -23,6 +24,23 @@
     <part name="message" type="xsd:string"/>
   </message>
   
+  <!-- Operaciones de Reportes -->
+  <message name="GetActiveLoansReportRequest">
+    <part name="startDate" type="xsd:string"/>
+    <part name="endDate" type="xsd:string"/>
+  </message>
+  <message name="GetActiveLoansReportResponse">
+    <part name="success" type="xsd:boolean"/>
+    <part name="report" type="xsd:string"/>
+  </message>
+  <message name="GetUserLoanHistoryRequest">
+    <part name="userId" type="xsd:int"/>
+  </message>
+  <message name="GetUserLoanHistoryResponse">
+    <part name="success" type="xsd:boolean"/>
+    <part name="history" type="xsd:string"/>
+  </message>
+  
   <portType name="LoanPort">
     <operation name="CreateLoan">
       <input message="tns:CreateLoanRequest"/>
@@ -31,6 +49,14 @@
     <operation name="ReturnLoan">
       <input message="tns:ReturnLoanRequest"/>
       <output message="tns:ReturnLoanResponse"/>
+    </operation>
+    <operation name="GetActiveLoansReport">
+      <input message="tns:GetActiveLoansReportRequest"/>
+      <output message="tns:GetActiveLoansReportResponse"/>
+    </operation>
+    <operation name="GetUserLoanHistory">
+      <input message="tns:GetUserLoanHistoryRequest"/>
+      <output message="tns:GetUserLoanHistoryResponse"/>
     </operation>
   </portType>
   
@@ -47,6 +73,24 @@
     </operation>
     <operation name="ReturnLoan">
       <soap:operation soapAction="http://example.com/LoanService/ReturnLoan"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="GetActiveLoansReport">
+      <soap:operation soapAction="http://example.com/LoanService/GetActiveLoansReport"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="GetUserLoanHistory">
+      <soap:operation soapAction="http://example.com/LoanService/GetUserLoanHistory"/>
       <input>
         <soap:body use="literal"/>
       </input>

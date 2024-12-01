@@ -38,3 +38,25 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Asignar un rol a un usuario (solo accesible para administradores)
+exports.assignRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    // Validar que el rol sea válido
+    const validRoles = ['admin', 'librarian', 'user'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ message: 'Rol inválido. Roles permitidos: admin, librarian, user' });
+    }
+
+    // Actualizar el rol del usuario
+    const [updated] = await User.update({ role }, { where: { id } });
+    if (!updated) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    res.json({ message: 'Rol asignado correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

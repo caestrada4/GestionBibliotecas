@@ -30,7 +30,8 @@ const loanService = {
 
           return { success: true, loanId: loan.id, message: 'Préstamo creado con éxito' };
         } catch (error) {
-          return { success: false, message: error.message };
+          console.error('Error al crear el préstamo:', error);
+          return { success: false, message: 'Error interno del servidor' };
         }
       },
 
@@ -59,7 +60,8 @@ const loanService = {
 
           return { success: true, message: `Libro devuelto con éxito. Multa: ${fine} unidades`, fine };
         } catch (error) {
-          return { success: false, message: error.message };
+          console.error('Error al registrar la devolución:', error);
+          return { success: false, message: 'Error interno del servidor' };
         }
       },
 
@@ -68,7 +70,7 @@ const loanService = {
         try {
           const loans = await Loan.findAll({
             where: { returnDate: null },
-            include: [{ model: User }, { model: Book }],
+            include: [{ model: User, attributes: ['name'] }, { model: Book, attributes: ['title'] }],
           });
 
           const activeLoans = loans.map((loan) => ({
@@ -80,7 +82,8 @@ const loanService = {
 
           return { success: true, loans: JSON.stringify(activeLoans) };
         } catch (error) {
-          return { success: false, message: error.message };
+          console.error('Error al obtener préstamos activos:', error);
+          return { success: false, message: 'Error interno del servidor' };
         }
       },
 
@@ -89,8 +92,12 @@ const loanService = {
         try {
           const loans = await Loan.findAll({
             where: { userId },
-            include: [{ model: Book }],
+            include: [{ model: Book, attributes: ['title'] }],
           });
+
+          if (!loans || loans.length === 0) {
+            return { success: false, message: 'No se encontró historial de préstamos para este usuario' };
+          }
 
           const loanHistory = loans.map((loan) => ({
             loanId: loan.id,
@@ -101,7 +108,8 @@ const loanService = {
 
           return { success: true, history: JSON.stringify(loanHistory) };
         } catch (error) {
-          return { success: false, message: error.message };
+          console.error('Error al obtener el historial del usuario:', error);
+          return { success: false, message: 'Error interno del servidor' };
         }
       },
     },
@@ -110,6 +118,11 @@ const loanService = {
 
 // Leer el archivo WSDL desde la ruta especificada
 const wsdlPath = path.join(__dirname, '../../service.wsdl');
-const wsdl = fs.readFileSync(wsdlPath, 'utf8');
+let wsdl = '';
+try {
+  wsdl = fs.readFileSync(wsdlPath, 'utf8');
+} catch (error) {
+  console.error('Error al cargar el archivo WSDL:', error.message);
+}
 
 module.exports = { loanService, wsdl };

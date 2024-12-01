@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const bookRoutes = require('./routes/bookRoutes'); // Asegúrate de que esto es correcto
 const userRoutes = require('./routes/userRoutes'); // Asegúrate de que esto es correcto
 const loanRoutes = require('./routes/loanRoutes'); // Asegúrate de que esto es correcto
+const authRoutes = require('./routes/authRoutes');
+
 const soap = require('soap');
 const { loanService, wsdl } = require('./services/loanService');
 require('dotenv').config();
@@ -15,7 +17,8 @@ app.use(bodyParser.json());
 app.use('/api/books', bookRoutes); // Aquí usa correctamente las rutas
 app.use('/api/users', userRoutes);
 app.use('/api/loans', loanRoutes);
-
+// Conectar la ruta de login
+app.use('/api/auth', authRoutes);
 // Servicio SOAP
 const soapPort = process.env.SOAP_PORT || 8000;
 soap.listen(app, '/loanService', loanService, wsdl, () => {
