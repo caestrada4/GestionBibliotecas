@@ -5,7 +5,18 @@ exports.getAllBooks = async (req, res) => {
   res.json(books);
 };
 
+exports.getBookById = async (req, res) => {
+  const book = await Book.findByPk(req.params.id);
+  res.json(book || { message: 'Book not found' });
+};
+
 exports.createBook = async (req, res) => {
   const book = await Book.create(req.body);
   res.status(201).json(book);
+};
+
+exports.updateBook = async (req, res) => {
+  const { id } = req.params;
+  const updated = await Book.update(req.body, { where: { id } });
+  res.json(updated);
 };

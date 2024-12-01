@@ -1,0 +1,64 @@
+<definitions name="LoanService"
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="http://example.com/LoanService/"
+  targetNamespace="http://example.com/LoanService/">
+  
+  <message name="CreateLoanRequest">
+    <part name="userId" type="xsd:int"/>
+    <part name="bookId" type="xsd:int"/>
+    <part name="loanDate" type="xsd:string"/>
+    <part name="returnDate" type="xsd:string"/>
+  </message>
+  <message name="CreateLoanResponse">
+    <part name="success" type="xsd:boolean"/>
+    <part name="loanId" type="xsd:int"/>
+    <part name="message" type="xsd:string"/>
+  </message>
+  <message name="ReturnLoanRequest">
+    <part name="loanId" type="xsd:int"/>
+  </message>
+  <message name="ReturnLoanResponse">
+    <part name="success" type="xsd:boolean"/>
+    <part name="message" type="xsd:string"/>
+  </message>
+  
+  <portType name="LoanPort">
+    <operation name="CreateLoan">
+      <input message="tns:CreateLoanRequest"/>
+      <output message="tns:CreateLoanResponse"/>
+    </operation>
+    <operation name="ReturnLoan">
+      <input message="tns:ReturnLoanRequest"/>
+      <output message="tns:ReturnLoanResponse"/>
+    </operation>
+  </portType>
+  
+  <binding name="LoanBinding" type="tns:LoanPort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="CreateLoan">
+      <soap:operation soapAction="http://example.com/LoanService/CreateLoan"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="ReturnLoan">
+      <soap:operation soapAction="http://example.com/LoanService/ReturnLoan"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  
+  <service name="LoanService">
+    <port name="LoanPort" binding="tns:LoanBinding">
+      <soap:address location="http://localhost:8000/loanService"/>
+    </port>
+  </service>
+</definitions>
