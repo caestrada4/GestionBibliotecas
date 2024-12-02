@@ -31,13 +31,14 @@ exports.verifyToken = async (req, res, next) => {
 // Middleware para verificar roles
 exports.verifyRole = (allowedRoles) => {
   return (req, res, next) => {
-    // Verifica si el rol del usuario está incluido en los roles permitidos
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRole = req.user?.role; // Suponiendo que el rol está en req.user
+    if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({ message: 'No tienes permiso para realizar esta acción' });
     }
     next();
   };
 };
+
 
 // Middleware opcional: Autenticación básica (sin token, para desarrollo)
 exports.basicAuth = async (req, res, next) => {

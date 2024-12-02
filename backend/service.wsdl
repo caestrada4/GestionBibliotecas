@@ -1,9 +1,10 @@
 <definitions name="LoanService"
   xmlns="http://schemas.xmlsoap.org/wsdl/"
   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:tns="http://example.com/LoanService/"
   targetNamespace="http://example.com/LoanService/">
-  
+
   <!-- Operaciones de Préstamos -->
   <message name="CreateLoanRequest">
     <part name="userId" type="xsd:int"/>
@@ -23,7 +24,7 @@
     <part name="success" type="xsd:boolean"/>
     <part name="message" type="xsd:string"/>
   </message>
-  
+
   <!-- Operaciones de Reportes -->
   <message name="GetActiveLoansReportRequest">
     <part name="startDate" type="xsd:string"/>
@@ -40,30 +41,36 @@
     <part name="success" type="xsd:boolean"/>
     <part name="history" type="xsd:string"/>
   </message>
-  
+
+  <!-- PortType -->
   <portType name="LoanPort">
     <operation name="CreateLoan">
+      <documentation>Crea un nuevo préstamo para un usuario.</documentation>
       <input message="tns:CreateLoanRequest"/>
       <output message="tns:CreateLoanResponse"/>
     </operation>
     <operation name="ReturnLoan">
+      <documentation>Registra la devolución de un préstamo.</documentation>
       <input message="tns:ReturnLoanRequest"/>
       <output message="tns:ReturnLoanResponse"/>
     </operation>
     <operation name="GetActiveLoansReport">
+      <documentation>Obtiene un reporte de préstamos activos en un rango de fechas.</documentation>
       <input message="tns:GetActiveLoansReportRequest"/>
       <output message="tns:GetActiveLoansReportResponse"/>
     </operation>
     <operation name="GetUserLoanHistory">
+      <documentation>Obtiene el historial de préstamos de un usuario específico.</documentation>
       <input message="tns:GetUserLoanHistoryRequest"/>
       <output message="tns:GetUserLoanHistoryResponse"/>
     </operation>
   </portType>
-  
+
+  <!-- Binding -->
   <binding name="LoanBinding" type="tns:LoanPort">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <operation name="CreateLoan">
-      <soap:operation soapAction="http://example.com/LoanService/CreateLoan"/>
+      <soap:operation soapAction="http://example.com/LoanService/CreateLoan" style="document"/>
       <input>
         <soap:body use="literal"/>
       </input>
@@ -72,7 +79,7 @@
       </output>
     </operation>
     <operation name="ReturnLoan">
-      <soap:operation soapAction="http://example.com/LoanService/ReturnLoan"/>
+      <soap:operation soapAction="http://example.com/LoanService/ReturnLoan" style="document"/>
       <input>
         <soap:body use="literal"/>
       </input>
@@ -81,7 +88,7 @@
       </output>
     </operation>
     <operation name="GetActiveLoansReport">
-      <soap:operation soapAction="http://example.com/LoanService/GetActiveLoansReport"/>
+      <soap:operation soapAction="http://example.com/LoanService/GetActiveLoansReport" style="document"/>
       <input>
         <soap:body use="literal"/>
       </input>
@@ -90,7 +97,7 @@
       </output>
     </operation>
     <operation name="GetUserLoanHistory">
-      <soap:operation soapAction="http://example.com/LoanService/GetUserLoanHistory"/>
+      <soap:operation soapAction="http://example.com/LoanService/GetUserLoanHistory" style="document"/>
       <input>
         <soap:body use="literal"/>
       </input>
@@ -99,10 +106,11 @@
       </output>
     </operation>
   </binding>
-  
+
+  <!-- Service -->
   <service name="LoanService">
     <port name="LoanPort" binding="tns:LoanBinding">
-      <soap:address location="http://localhost:8000/loanService"/>
+      <soap:address location="http://localhost:3000/loanService"/>
     </port>
   </service>
 </definitions>

@@ -10,42 +10,45 @@ const loanService = {
       // Crear un préstamo
       CreateLoan: async ({ userId, bookId, loanDate, returnDate }) => {
         try {
-          // Validar que el usuario exista
+          // Validar que el usuario existe
           const user = await User.findByPk(userId);
           if (!user) {
             return { success: false, message: 'Usuario no encontrado' };
           }
 
-          // Validar que el libro exista y esté disponible
+          // Validar que el libro existe y está disponible
           const book = await Book.findByPk(bookId);
-          if (!book || !book.available) {
-            return { success: false, message: 'El libro no está disponible' };
+          if (!book) {
+            return { success: false, message: 'El libro no existe' };
+          }
+          if (!book.available) {
+            return { success: false, message: 'El libro no está disponible para préstamo' };
           }
 
           // Crear el préstamo
           const loan = await Loan.create({ userId, bookId, loanDate, returnDate });
 
           // Marcar el libro como no disponible
-          await Book.update({ available: false }, { where: { id: bookId } });
+          await book.update({ available: false });
 
           return { success: true, loanId: loan.id, message: 'Préstamo creado con éxito' };
         } catch (error) {
           console.error('Error al crear el préstamo:', error);
-          return { success: false, message: 'Error interno del servidor' };
+          return { success: false, message: 'Error interno del servidor al crear el préstamo' };
         }
       },
 
       // Registrar devolución de un libro
       ReturnLoan: async ({ loanId }) => {
         try {
-          // Encontrar el préstamo
-          const loan = await Loan.findByPk(loanId);
+          // Validar que el préstamo existe
+          const loan = await Loan.findByPk(loanId, { include: [{ model: Book }] });
           if (!loan) {
             return { success: false, message: 'Préstamo no encontrado' };
           }
 
-          // Actualizar la disponibilidad del libro
-          await Book.update({ available: true }, { where: { id: loan.bookId } });
+          // Actualizar disponibilidad del libro
+          await loan.Book.update({ available: true });
 
           // Calcular multa si la devolución es tardía
           const today = new Date();
@@ -55,13 +58,13 @@ const loanService = {
             fine = diffDays * 2; // Multa de 2 unidades por día
           }
 
-          loan.returnDate = today;
-          await loan.save();
+          // Actualizar el préstamo con la fecha de devolución
+          await loan.update({ returnDate: today });
 
           return { success: true, message: `Libro devuelto con éxito. Multa: ${fine} unidades`, fine };
         } catch (error) {
           console.error('Error al registrar la devolución:', error);
-          return { success: false, message: 'Error interno del servidor' };
+          return { success: false, message: 'Error interno del servidor al registrar la devolución' };
         }
       },
 
@@ -70,20 +73,27 @@ const loanService = {
         try {
           const loans = await Loan.findAll({
             where: { returnDate: null },
-            include: [{ model: User, attributes: ['name'] }, { model: Book, attributes: ['title'] }],
+            include: [
+              { model: User, attributes: ['name', 'email'] },
+              { model: Book, attributes: ['title', 'author'] },
+            ],
           });
+
+          if (!loans || loans.length === 0) {
+            return { success: true, loans: [], message: 'No hay préstamos activos en este momento' };
+          }
 
           const activeLoans = loans.map((loan) => ({
             loanId: loan.id,
-            user: loan.User.name,
-            book: loan.Book.title,
+            user: { name: loan.User.name, email: loan.User.email },
+            book: { title: loan.Book.title, author: loan.Book.author },
             loanDate: loan.loanDate,
           }));
 
-          return { success: true, loans: JSON.stringify(activeLoans) };
+          return { success: true, loans: activeLoans };
         } catch (error) {
           console.error('Error al obtener préstamos activos:', error);
-          return { success: false, message: 'Error interno del servidor' };
+          return { success: false, message: 'Error interno del servidor al obtener préstamos activos' };
         }
       },
 
@@ -92,7 +102,7 @@ const loanService = {
         try {
           const loans = await Loan.findAll({
             where: { userId },
-            include: [{ model: Book, attributes: ['title'] }],
+            include: [{ model: Book, attributes: ['title', 'author'] }],
           });
 
           if (!loans || loans.length === 0) {
@@ -101,15 +111,15 @@ const loanService = {
 
           const loanHistory = loans.map((loan) => ({
             loanId: loan.id,
-            book: loan.Book.title,
+            book: { title: loan.Book.title, author: loan.Book.author },
             loanDate: loan.loanDate,
             returnDate: loan.returnDate,
           }));
 
-          return { success: true, history: JSON.stringify(loanHistory) };
+          return { success: true, history: loanHistory };
         } catch (error) {
           console.error('Error al obtener el historial del usuario:', error);
-          return { success: false, message: 'Error interno del servidor' };
+          return { success: false, message: 'Error interno del servidor al obtener el historial del usuario' };
         }
       },
     },
