@@ -9,12 +9,25 @@ import DashboardPage from './pages/DashboardPage';
 function App() {
   return (
     <div>
-      <Navbar />
+      {/* Validación para asegurar que Navbar y rutas están funcionando */}
+      {Navbar ? <Navbar /> : <div>Error: Navbar no encontrado</div>}
       <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/books" element={<BooksPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/loans" element={<LoansPage />} />
+        <Route
+          path="/"
+          element={DashboardPage ? <DashboardPage /> : <div>Error: DashboardPage no encontrado</div>}
+        />
+        <Route
+          path="/books"
+          element={BooksPage ? <BooksPage /> : <div>Error: BooksPage no encontrado</div>}
+        />
+        <Route
+          path="/users"
+          element={UsersPage ? <UsersPage /> : <div>Error: UsersPage no encontrado</div>}
+        />
+        <Route
+          path="/loans"
+          element={LoansPage ? <LoansPage /> : <div>Error: LoansPage no encontrado</div>}
+        />
       </Routes>
     </div>
   );

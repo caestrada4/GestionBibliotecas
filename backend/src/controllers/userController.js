@@ -21,7 +21,22 @@ exports.getUserById = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    const newUser = await User.create(req.body);
+    const { name, email, password, userType, role } = req.body;
+
+    // Validar que el rol sea asignado solo por administradores
+    if (role && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permiso para asignar roles.' });
+    }
+
+    // Crear el nuevo usuario
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      userType,
+      role: role || 'user', // Por defecto, se asigna el rol 'user' si no se especifica
+    });
+
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -31,8 +46,20 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const [updated] = await User.update(req.body, { where: { id } });
+    const { name, email, password, userType, role } = req.body;
+
+    // Validar que el rol solo pueda ser actualizado por administradores
+    if (role && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permiso para actualizar roles.' });
+    }
+
+    const [updated] = await User.update(
+      { name, email, password, userType, role },
+      { where: { id } }
+    );
+
     if (!updated) return res.status(404).json({ message: 'Usuario no encontrado' });
+
     res.json({ message: 'Usuario actualizado correctamente' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -44,6 +71,11 @@ exports.assignRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
+
+    // Validar que solo un administrador puede asignar roles
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permiso para asignar roles.' });
+    }
 
     // Validar que el rol sea válido
     const validRoles = ['admin', 'librarian', 'user'];

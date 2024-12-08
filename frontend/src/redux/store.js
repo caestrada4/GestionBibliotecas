@@ -1,16 +1,14 @@
-import { createStore, applyMiddleware, combineReducers } from 'redux';
-import { thunk, withExtraArgument } from 'redux-thunk';
-import { composeWithDevTools } from 'redux-devtools-extension';
+import { configureStore } from '@reduxjs/toolkit';
 import bookReducer from './reducers/bookReducer';
-import userReducer from './reducers/userReducer';
 import loanReducer from './reducers/loanReducer';
+import userReducer from './reducers/userReducer';
 
-const rootReducer = combineReducers({
-  books: bookReducer,
-  users: userReducer,
-  loans: loanReducer,
+const store = configureStore({
+  reducer: {
+    books: bookReducer,
+    loans: loanReducer,
+    users: userReducer,
+  },
 });
-
-const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk)));
 
 export default store;

@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const bookRoutes = require('./routes/bookRoutes'); // Asegúrate de que estas rutas existen
+const cors = require('cors'); // Importar CORS
+const bookRoutes = require('./routes/bookRoutes'); 
 const userRoutes = require('./routes/userRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -10,6 +11,15 @@ const { loanService, wsdl } = require('./services/loanService');
 require('dotenv').config();
 
 const app = express();
+
+// Configuración de CORS
+app.use(
+  cors({
+    origin: "http://localhost:3001", // Dominio del frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Middleware para procesar JSON
 app.use(bodyParser.json());

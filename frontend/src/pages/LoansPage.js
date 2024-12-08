@@ -1,29 +1,48 @@
 import React, { useEffect, useState } from 'react';
-import { fetchLoans } from '../api/loanApi'; // Asegúrate de haber implementado esta API
+import { getActiveLoans, createLoan, returnLoan } from '../api/loanApi';
 
-function LoansPage() {
+const LoansPage = () => {
   const [loans, setLoans] = useState([]);
+  const [newLoan, setNewLoan] = useState({ userId: '', bookId: '', loanDate: '', returnDate: '' });
 
   useEffect(() => {
-    const loadLoans = async () => {
-      const data = await fetchLoans();
-      setLoans(data);
-    };
-    loadLoans();
+    async function fetchLoans() {
+      const response = await getActiveLoans();
+      setLoans(response);
+    }
+    fetchLoans();
   }, []);
+
+  const handleCreateLoan = async () => {
+    const createdLoan = await createLoan(newLoan);
+    setLoans([...loans, createdLoan]);
+  };
 
   return (
     <div>
       <h1>Gestión de Préstamos</h1>
       <ul>
         {loans.map((loan) => (
-          <li key={loan.id}>
-            Usuario: {loan.userId}, Libro: {loan.bookId}, Fecha de préstamo: {loan.loanDate}, Fecha de devolución: {loan.returnDate}
-          </li>
+          <li key={loan.id}>{`Préstamo de ${loan.user.name} - ${loan.book.title}`}</li>
         ))}
       </ul>
+      <form onSubmit={handleCreateLoan}>
+        <input
+          type="text"
+          placeholder="ID Usuario"
+          value={newLoan.userId}
+          onChange={(e) => setNewLoan({ ...newLoan, userId: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="ID Libro"
+          value={newLoan.bookId}
+          onChange={(e) => setNewLoan({ ...newLoan, bookId: e.target.value })}
+        />
+        <button type="submit">Registrar Préstamo</button>
+      </form>
     </div>
   );
-}
+};
 
 export default LoansPage;

@@ -13,7 +13,7 @@ exports.verifyToken = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
 
     // Verificar y decodificar el token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
 
     // Buscar el usuario en la base de datos
     const user = await User.findByPk(decoded.id);
@@ -21,9 +21,17 @@ exports.verifyToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Usuario no encontrado' });
     }
 
-    req.user = user; // Agregar el usuario a la solicitud para uso posterior
+    req.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      userType: user.userType,
+    }; // Agregar solo información necesaria a req.user
+
     next();
   } catch (error) {
+    console.error('Error al verificar el token:', error);
     return res.status(401).json({ message: 'Token inválido o expirado' });
   }
 };
@@ -31,14 +39,18 @@ exports.verifyToken = async (req, res, next) => {
 // Middleware para verificar roles
 exports.verifyRole = (allowedRoles) => {
   return (req, res, next) => {
-    const userRole = req.user?.role; // Suponiendo que el rol está en req.user
-    if (!allowedRoles.includes(userRole)) {
-      return res.status(403).json({ message: 'No tienes permiso para realizar esta acción' });
+    try {
+      const userRole = req.user?.role; // Suponiendo que el rol está en req.user
+      if (!allowedRoles.includes(userRole)) {
+        return res.status(403).json({ message: 'No tienes permiso para realizar esta acción' });
+      }
+      next();
+    } catch (error) {
+      console.error('Error al verificar rol:', error);
+      return res.status(500).json({ message: 'Error interno del servidor' });
     }
-    next();
   };
 };
-
 
 // Middleware opcional: Autenticación básica (sin token, para desarrollo)
 exports.basicAuth = async (req, res, next) => {
@@ -49,14 +61,23 @@ exports.basicAuth = async (req, res, next) => {
       return res.status(401).json({ message: 'Credenciales no proporcionadas' });
     }
 
+    // Buscar el usuario por email
     const user = await User.findOne({ where: { email } });
     if (!user || user.password !== password) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    req.user = user; // Agregar el usuario a la solicitud
+    req.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      userType: user.userType,
+    }; // Agregar solo información necesaria a req.user
+
     next();
   } catch (error) {
-    res.status(500).json({ message: 'Error en la autenticación' });
+    console.error('Error en la autenticación básica:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
