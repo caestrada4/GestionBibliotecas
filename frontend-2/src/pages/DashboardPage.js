@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext); // Accede al usuario desde el contexto
 
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
-      <h1>Bienvenido al Dashboard</h1>
+      <h1>Bienvenido, {user?.name || "Usuario"}</h1>
       <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginTop: "20px" }}>
         {/* Botón para Gestión de Libros */}
         <div
