@@ -24,6 +24,25 @@ const Loan = sequelize.define('Loan', {
       },
     },
   },
+  fine: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0,
+    allowNull: false,
+    validate: {
+      isDecimal: true,
+      min: 0,
+    },
+  },
+  status: {
+    type: DataTypes.ENUM('active', 'returned'),
+    defaultValue: 'active',
+    allowNull: false,
+  },
+}, {
+  indexes: [
+    { fields: ['userId'] },
+    { fields: ['bookId'] },
+  ],
 });
 
 // Relaciones
@@ -38,6 +57,17 @@ Loan.belongsTo(Book, {
   foreignKey: {
     allowNull: false,
   },
+  onDelete: 'CASCADE',
+});
+
+// Relaciones inversas
+User.hasMany(Loan, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE',
+});
+
+Book.hasMany(Loan, {
+  foreignKey: 'bookId',
   onDelete: 'CASCADE',
 });
 

@@ -5,7 +5,7 @@
   xmlns:tns="http://example.com/LoanService/"
   targetNamespace="http://example.com/LoanService/">
 
-  <!-- Operaciones de Préstamos -->
+  <!-- Mensajes para las Operaciones de Préstamos -->
   <message name="CreateLoanRequest">
     <part name="userId" type="xsd:int"/>
     <part name="bookId" type="xsd:int"/>
@@ -17,29 +17,43 @@
     <part name="loanId" type="xsd:int"/>
     <part name="message" type="xsd:string"/>
   </message>
+
   <message name="ReturnLoanRequest">
     <part name="loanId" type="xsd:int"/>
   </message>
   <message name="ReturnLoanResponse">
     <part name="success" type="xsd:boolean"/>
     <part name="message" type="xsd:string"/>
+    <part name="fine" type="xsd:float"/>
   </message>
 
-  <!-- Operaciones de Reportes -->
-  <message name="GetActiveLoansReportRequest">
-    <part name="startDate" type="xsd:string"/>
-    <part name="endDate" type="xsd:string"/>
+  <!-- Mensajes para Operaciones de Reportes -->
+  <message name="GetActiveLoansRequest">
+    <part name="filter" type="xsd:string"/> <!-- Opcional: filtros -->
   </message>
-  <message name="GetActiveLoansReportResponse">
+  <message name="GetActiveLoansResponse">
     <part name="success" type="xsd:boolean"/>
-    <part name="report" type="xsd:string"/>
+    <part name="loans" type="xsd:string"/> <!-- JSON serializado o XML -->
+    <part name="message" type="xsd:string"/>
   </message>
+
   <message name="GetUserLoanHistoryRequest">
     <part name="userId" type="xsd:int"/>
   </message>
   <message name="GetUserLoanHistoryResponse">
     <part name="success" type="xsd:boolean"/>
-    <part name="history" type="xsd:string"/>
+    <part name="history" type="xsd:string"/> <!-- JSON serializado o XML -->
+    <part name="message" type="xsd:string"/>
+  </message>
+
+  <!-- Mensajes para Obtener todos los Préstamos -->
+  <message name="GetAllLoansRequest">
+    <part name="filter" type="xsd:string"/> <!-- Opcional: filtros -->
+  </message>
+  <message name="GetAllLoansResponse">
+    <part name="success" type="xsd:boolean"/>
+    <part name="loans" type="xsd:string"/> <!-- JSON serializado o XML -->
+    <part name="message" type="xsd:string"/>
   </message>
 
   <!-- PortType -->
@@ -54,15 +68,20 @@
       <input message="tns:ReturnLoanRequest"/>
       <output message="tns:ReturnLoanResponse"/>
     </operation>
-    <operation name="GetActiveLoansReport">
-      <documentation>Obtiene un reporte de préstamos activos en un rango de fechas.</documentation>
-      <input message="tns:GetActiveLoansReportRequest"/>
-      <output message="tns:GetActiveLoansReportResponse"/>
+    <operation name="GetActiveLoans">
+      <documentation>Obtiene la lista de préstamos activos.</documentation>
+      <input message="tns:GetActiveLoansRequest"/>
+      <output message="tns:GetActiveLoansResponse"/>
     </operation>
     <operation name="GetUserLoanHistory">
       <documentation>Obtiene el historial de préstamos de un usuario específico.</documentation>
       <input message="tns:GetUserLoanHistoryRequest"/>
       <output message="tns:GetUserLoanHistoryResponse"/>
+    </operation>
+    <operation name="GetAllLoans">
+      <documentation>Obtiene todos los préstamos registrados, tanto activos como inactivos.</documentation>
+      <input message="tns:GetAllLoansRequest"/>
+      <output message="tns:GetAllLoansResponse"/>
     </operation>
   </portType>
 
@@ -87,8 +106,8 @@
         <soap:body use="literal"/>
       </output>
     </operation>
-    <operation name="GetActiveLoansReport">
-      <soap:operation soapAction="http://example.com/LoanService/GetActiveLoansReport" style="document"/>
+    <operation name="GetActiveLoans">
+      <soap:operation soapAction="http://example.com/LoanService/GetActiveLoans" style="document"/>
       <input>
         <soap:body use="literal"/>
       </input>
@@ -105,9 +124,18 @@
         <soap:body use="literal"/>
       </output>
     </operation>
+    <operation name="GetAllLoans">
+      <soap:operation soapAction="http://example.com/LoanService/GetAllLoans" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
   </binding>
 
-  <!-- Service -->
+  <!-- Servicio -->
   <service name="LoanService">
     <port name="LoanPort" binding="tns:LoanBinding">
       <soap:address location="http://localhost:3000/loanService"/>

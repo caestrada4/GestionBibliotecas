@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-// Middleware para verificar el token JWT
+// Middleware para verificar el token JWT (para solicitudes REST)
+// Middleware para verificar el token JWT (para solicitudes REST)
 exports.verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -21,36 +22,39 @@ exports.verifyToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Usuario no encontrado' });
     }
 
+    // Adjuntar información del usuario a la solicitud
     req.user = {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
-      userType: user.userType,
-    }; // Agregar solo información necesaria a req.user
+      role: user.role, // Role necesario para verificar permisos en las rutas
+    };
 
     next();
   } catch (error) {
-    console.error('Error al verificar el token:', error);
+    console.error('Error al verificar el token:', error.message);
     return res.status(401).json({ message: 'Token inválido o expirado' });
   }
 };
 
+
+// Middleware para verificar roles
 // Middleware para verificar roles
 exports.verifyRole = (allowedRoles) => {
   return (req, res, next) => {
     try {
-      const userRole = req.user?.role; // Suponiendo que el rol está en req.user
+      const userRole = req.user?.role; // El rol está en req.user después de verificar el token
       if (!allowedRoles.includes(userRole)) {
         return res.status(403).json({ message: 'No tienes permiso para realizar esta acción' });
       }
       next();
     } catch (error) {
-      console.error('Error al verificar rol:', error);
+      console.error('Error al verificar rol:', error.message);
       return res.status(500).json({ message: 'Error interno del servidor' });
     }
   };
 };
+
 
 // Middleware opcional: Autenticación básica (sin token, para desarrollo)
 exports.basicAuth = async (req, res, next) => {
@@ -73,11 +77,72 @@ exports.basicAuth = async (req, res, next) => {
       email: user.email,
       role: user.role,
       userType: user.userType,
-    }; // Agregar solo información necesaria a req.user
+    };
 
     next();
   } catch (error) {
-    console.error('Error en la autenticación básica:', error);
+    console.error('Error en la autenticación básica:', error.message);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Middleware para manejar solicitudes SOAP y REST
+exports.verifySOAPRequest = (req, res, next) => {
+  if (req.is('xml') || req.headers['content-type'] === 'text/xml') {
+    try {
+      // Verificar el token en el header para solicitudes SOAP
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.error('Token no proporcionado en solicitud SOAP');
+        return res.status(401).send(`
+          <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+            <soapenv:Body>
+              <soapenv:Fault>
+                <faultcode>SOAP-ENV:Client</faultcode>
+                <faultstring>Token no proporcionado o inválido para SOAP</faultstring>
+              </soapenv:Fault>
+            </soapenv:Body>
+          </soapenv:Envelope>
+        `);
+      }
+
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
+      req.user = decoded; // Agregar usuario decodificado a la solicitud
+      return next();
+    } catch (error) {
+      console.error('Error al verificar token para SOAP:', error.message);
+      return res.status(401).send(`
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+          <soapenv:Body>
+            <soapenv:Fault>
+              <faultcode>SOAP-ENV:Client</faultcode>
+              <faultstring>Token inválido o expirado para SOAP</faultstring>
+            </soapenv:Fault>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      `);
+    }
+  }
+  next();
+};
+
+// Manejo de errores global
+exports.globalErrorHandler = (err, req, res, next) => {
+  console.error('Error no manejado:', err.stack);
+  if (req.is('xml') || req.headers['content-type'] === 'text/xml') {
+    res.status(500).send(`
+      <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        <soapenv:Body>
+          <soapenv:Fault>
+            <faultcode>SOAP-ENV:Server</faultcode>
+            <faultstring>Error interno del servidor</faultstring>
+          </soapenv:Fault>
+        </soapenv:Body>
+      </soapenv:Envelope>
+    `);
+  } else {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

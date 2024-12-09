@@ -1,13 +1,19 @@
-const { Sequelize } = require('sequelize');
 const Loan = require('../models/loan');
 const Book = require('../models/book');
 const User = require('../models/user');
+const sequelize = require('../config/config'); // Asegúrate de tener la configuración de Sequelize
 
+// Crear un préstamo
 exports.createLoan = async (req, res) => {
+  const { userId, bookId, loanDate, returnDate } = req.body;
+
+  // Verificación si los valores userId o bookId están vacíos o son nulos
+  if (!userId || !bookId || !loanDate || !returnDate) {
+    return res.status(400).json({ message: "Por favor, complete todos los campos (usuario, libro, fecha de préstamo y devolución)" });
+  }
+
   const transaction = await sequelize.transaction();
   try {
-    const { userId, bookId, loanDate, returnDate } = req.body;
-
     // Validar que el usuario existe
     const user = await User.findByPk(userId);
     if (!user) {
@@ -15,12 +21,14 @@ exports.createLoan = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Validar que el libro está disponible
+    // Validar que el libro existe
     const book = await Book.findByPk(bookId);
     if (!book) {
       await transaction.rollback();
       return res.status(404).json({ message: 'El libro no existe' });
     }
+
+    // Validar si el libro está disponible
     if (!book.available) {
       await transaction.rollback();
       return res.status(400).json({ message: 'El libro no está disponible' });
@@ -50,20 +58,21 @@ exports.createLoan = async (req, res) => {
   }
 };
 
+
+
+// Registrar la devolución de un préstamo
 exports.returnLoan = async (req, res) => {
   try {
     const { id } = req.params;
+    const loan = await Loan.findByPk(id, { include: [{ model: Book }] });
+    if (!loan) {
+      return res.status(404).json({ message: 'Préstamo no encontrado' });
+    }
 
-    // Validar que el préstamo existe
-    const loan = await Loan.findByPk(id, { include: [Book] });
-    if (!loan) return res.status(404).json({ message: 'Préstamo no encontrado' });
-
-    // Validar si el préstamo ya fue devuelto
     if (loan.returnDate) {
       return res.status(400).json({ message: 'El préstamo ya fue devuelto' });
     }
 
-    // Calcular multa si aplica
     const today = new Date();
     let fine = 0;
     if (loan.returnDate && today > new Date(loan.returnDate)) {
@@ -73,7 +82,6 @@ exports.returnLoan = async (req, res) => {
       fine = diffDays * 2; // Multa de 2 unidades por día
     }
 
-    // Actualizar el estado del libro y del préstamo
     await loan.Book.update({ available: true });
     loan.returnDate = today;
     await loan.save();
@@ -88,57 +96,42 @@ exports.returnLoan = async (req, res) => {
   }
 };
 
+// Obtener préstamos activos
 exports.getActiveLoans = async (req, res) => {
   try {
     const loans = await Loan.findAll({
-      where: { returnDate: null },
+      where: { returnDate: null }, // Solo préstamos activos
       include: [
-        { model: User, attributes: ['id', 'name', 'email'] },
-        { model: Book, attributes: ['id', 'title', 'author'] },
+        { model: User, attributes: ['id', 'name', 'email'] }, // Información del usuario
+        { model: Book, attributes: ['id', 'title', 'author'] }, // Información del libro
       ],
     });
 
-    if (loans.length === 0) {
+    if (!loans || loans.length === 0) {
       return res.status(404).json({ message: 'No hay préstamos activos' });
     }
 
-    const formattedLoans = loans.map((loan) => ({
-      loanId: loan.id,
-      user: { id: loan.User.id, name: loan.User.name, email: loan.User.email },
-      book: { id: loan.Book.id, title: loan.Book.title, author: loan.Book.author },
-      loanDate: loan.loanDate,
-    }));
-
-    res.json(formattedLoans);
+    res.json(loans);
   } catch (error) {
     console.error('Error al obtener préstamos activos:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
+// Obtener historial de préstamos de un usuario
 exports.getUserLoanHistory = async (req, res) => {
+  const { userId } = req.params;
   try {
-    const { userId } = req.params;
-
     const loans = await Loan.findAll({
       where: { userId },
       include: [{ model: Book, attributes: ['id', 'title', 'author'] }],
     });
 
-    if (loans.length === 0) {
-      return res
-        .status(404)
-        .json({ message: 'No hay historial de préstamos para este usuario' });
+    if (!loans || loans.length === 0) {
+      return res.status(404).json({ message: 'No se encontró historial de préstamos' });
     }
 
-    const formattedHistory = loans.map((loan) => ({
-      loanId: loan.id,
-      book: { id: loan.Book.id, title: loan.Book.title, author: loan.Book.author },
-      loanDate: loan.loanDate,
-      returnDate: loan.returnDate,
-    }));
-
-    res.json(formattedHistory);
+    res.json(loans);
   } catch (error) {
     console.error('Error al obtener el historial del usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
