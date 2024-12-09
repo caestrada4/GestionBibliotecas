@@ -1,64 +1,69 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Box, Button, Card, CardContent, Typography, Grid } from "@mui/material";
 
 function Dashboard() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext); // Accede al usuario desde el contexto
 
+  const sections = [
+    {
+      title: "Gestión de Libros",
+      color: "#007BFF",
+      path: "/books",
+    },
+    {
+      title: "Gestión de Usuarios",
+      color: "#28A745",
+      path: "/users",
+    },
+    {
+      title: "Gestión de Préstamos",
+      color: "#FFC107",
+      path: "/loans",
+    },
+  ];
+
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h1>Bienvenido, {user?.name || "Usuario"}</h1>
-      <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginTop: "20px" }}>
-        {/* Botón para Gestión de Libros */}
-        <div
-          style={{
-            width: "200px",
-            padding: "20px",
-            backgroundColor: "#007BFF",
-            color: "#fff",
-            borderRadius: "10px",
-            cursor: "pointer",
-            textAlign: "center",
-          }}
-          onClick={() => navigate("/books")}
+    <Box sx={{ padding: "20px", textAlign: "center" }}>
+      <Typography variant="h4" gutterBottom>
+        Bienvenido, {user?.name || "Usuario"}
+      </Typography>
+      <Grid container spacing={3} justifyContent="center" mt={2}>
+        {sections.map((section, index) => (
+          <Grid item xs={12} sm={6} md={4} key={index}>
+            <Card
+              sx={{
+                backgroundColor: section.color,
+                color: "#fff",
+                cursor: "pointer",
+                borderRadius: "10px",
+                "&:hover": {
+                  boxShadow: 6,
+                },
+              }}
+              onClick={() => navigate(section.path)}
+            >
+              <CardContent>
+                <Typography variant="h6" align="center">
+                  {section.title}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+      <Box mt={4}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/")}
         >
-          <h3>Gestión de Libros</h3>
-        </div>
-
-        {/* Botón para Gestión de Usuarios */}
-        <div
-          style={{
-            width: "200px",
-            padding: "20px",
-            backgroundColor: "#28A745",
-            color: "#fff",
-            borderRadius: "10px",
-            cursor: "pointer",
-            textAlign: "center",
-          }}
-          onClick={() => navigate("/users")}
-        >
-          <h3>Gestión de Usuarios</h3>
-        </div>
-
-        {/* Botón para Gestión de Préstamos */}
-        <div
-          style={{
-            width: "200px",
-            padding: "20px",
-            backgroundColor: "#FFC107",
-            color: "#fff",
-            borderRadius: "10px",
-            cursor: "pointer",
-            textAlign: "center",
-          }}
-          onClick={() => navigate("/loans")}
-        >
-          <h3>Gestión de Préstamos</h3>
-        </div>
-      </div>
-    </div>
+          Volver al Inicio
+        </Button>
+      </Box>
+    </Box>
   );
 }
 

@@ -1,17 +1,64 @@
 import React, { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Menu,
+  MenuItem,
+  IconButton,
+} from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import MenuIcon from "@mui/icons-material/Menu";
 import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext); // Obtener datos del usuario y función de logout
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
-    <AppBar position="static" style={{ marginBottom: "20px" }}>
+    <AppBar position="static" sx={{ marginBottom: "20px" }}>
       <Toolbar>
-        {/* Enlaces de navegación */}
-        <Box sx={{ flexGrow: 1, display: "flex", gap: "1rem" }}>
+        {/* Botón de menú para pantallas pequeñas */}
+        <IconButton
+          color="inherit"
+          edge="start"
+          sx={{ display: { xs: "block", md: "none" } }}
+          onClick={handleMenuOpen}
+        >
+          <MenuIcon />
+        </IconButton>
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={() => navigate("/")}>Inicio</MenuItem>
+          <MenuItem onClick={() => navigate("/books")}>Libros</MenuItem>
+          <MenuItem onClick={() => navigate("/users")}>Usuarios</MenuItem>
+          <MenuItem onClick={() => navigate("/loans")}>Préstamos</MenuItem>
+        </Menu>
+
+        {/* Links de navegación para pantallas medianas y grandes */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: { xs: "none", md: "flex" },
+            gap: "1rem",
+          }}
+        >
           <Button color="inherit" onClick={() => navigate("/")}>
             Inicio
           </Button>
@@ -28,16 +75,20 @@ const Navbar = () => {
 
         {/* Mostrar información del usuario */}
         {user && (
-          <Typography
-            variant="body1"
-            style={{ marginRight: "20px", color: "white" }}
-          >
-            {user.name} ({user.role})
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <AccountCircleIcon />
+            <Typography variant="body1" sx={{ color: "white" }}>
+              {user.name} ({user.role})
+            </Typography>
+          </Box>
         )}
 
         {/* Botón para cerrar sesión */}
-        <Button color="inherit" onClick={logout}>
+        <Button
+          color="inherit"
+          onClick={logout}
+          sx={{ marginLeft: { xs: "auto", md: "20px" } }}
+        >
           Cerrar Sesión
         </Button>
       </Toolbar>

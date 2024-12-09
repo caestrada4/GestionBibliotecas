@@ -9,8 +9,20 @@ exports.login = async (req, res) => {
     // Buscar usuario por email
     const user = await User.findOne({ where: { email } });
 
+    // Verificar si el usuario existe
+    if (!user) {
+      return res.status(401).json({ message: 'Credenciales inválidas' });
+    }
+
+    // Verificar si el usuario está suspendido
+    if (user.isSuspended) {
+      return res.status(403).json({
+        message: `Usuario suspendido. Motivo: ${user.suspensionReason || 'No especificado'}`,
+      });
+    }
+
     // Verificar credenciales en texto plano
-    if (!user || user.password !== password) {
+    if (user.password !== password) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 

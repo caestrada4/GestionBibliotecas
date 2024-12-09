@@ -29,6 +29,15 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: true, // Esto puede incluir valores como 'Estudiante' o 'Profesor'
   },
+  isSuspended: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false, // Por defecto, los usuarios no están suspendidos
+  },
+  suspensionReason: {
+    type: DataTypes.STRING,
+    allowNull: true, // Permite almacenar la justificación de la suspensión
+  },
 });
 
 module.exports = User;

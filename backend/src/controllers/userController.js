@@ -92,3 +92,58 @@ exports.assignRole = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+exports.suspendUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { justification } = req.body;
+
+    // Validar que el usuario es admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permiso para suspender usuarios.' });
+    }
+
+    // Validar que se proporcione una justificación
+    if (!justification || typeof justification !== 'string' || justification.trim() === '') {
+      return res.status(400).json({ message: 'Se requiere una justificación válida para suspender al usuario.' });
+    }
+
+    // Actualizar el usuario en la base de datos
+    const [updated] = await User.update(
+      { isSuspended: true, suspensionReason: justification },
+      { where: { id } }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    res.json({ message: 'Usuario suspendido correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+exports.unsuspendUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validar que solo un administrador puede reactivar usuarios
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permiso para reactivar usuarios.' });
+    }
+
+    const [updated] = await User.update(
+      { isSuspended: false, suspensionReason: null }, // Reactivar al usuario
+      { where: { id } }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    res.json({ message: 'Usuario reactivado correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -31,6 +31,8 @@ const UsersPage = () => {
     password: "",
     userType: "",
     role: "user",
+    isSuspended: false,
+    suspensionReason: "",
   });
   const [editUser, setEditUser] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -59,7 +61,15 @@ const UsersPage = () => {
     try {
       await API.post("/users", newUser);
       fetchUsers();
-      setNewUser({ name: "", email: "", password: "", userType: "", role: "user" });
+      setNewUser({
+        name: "",
+        email: "",
+        password: "",
+        userType: "",
+        role: "user",
+        isSuspended: false,
+        suspensionReason: "",
+      });
     } catch (error) {
       console.error("Error al agregar usuario:", error);
     }
@@ -94,13 +104,24 @@ const UsersPage = () => {
     const justification = prompt("Proporcione una justificación para suspender al usuario:");
     if (justification) {
       try {
-        await API.put(`/users/${id}`, { isSuspended: true, justification });
-        fetchUsers();
+        await API.put(`/users/${id}/suspend`, { justification }); // Verifica este formato
+        fetchUsers(); // Actualiza la lista de usuarios después de suspender
       } catch (error) {
         console.error("Error al suspender usuario:", error);
       }
     }
   };
+  
+
+  const handleUnsuspendUser = async (id) => {
+    try {
+      await API.put(`/users/${id}/unsuspend`); // Verifica esta URL
+      fetchUsers(); // Recarga la lista de usuarios después de reactivar
+    } catch (error) {
+      console.error("Error al reactivar usuario:", error);
+    }
+  };
+  
 
   const paginatedUsers = users.slice(
     (currentPage - 1) * itemsPerPage,
@@ -126,6 +147,7 @@ const UsersPage = () => {
               <TableCell>Correo</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>Rol</TableCell>
+              <TableCell>Estado</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -138,12 +160,30 @@ const UsersPage = () => {
                 <TableCell>{user.userType}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
+                  {user.isSuspended
+                    ? `Suspendido: ${user.suspensionReason}`
+                    : "Activo"}
+                </TableCell>
+                <TableCell>
                   <Button color="primary" onClick={() => handleEditUserOpen(user)}>
                     Editar
                   </Button>
-                  <Button color="secondary" onClick={() => handleSuspendUser(user.id)}>
+                  {user.isSuspended ? (
+                    <Button
+                    color="primary"
+                    onClick={() => handleUnsuspendUser(user.id)}
+                    >
+                    Reactivar
+                    </Button>
+                ) : (
+                    // Botón para suspender al usuario
+                    <Button
+                    color="secondary"
+                    onClick={() => handleSuspendUser(user.id)}
+                    >
                     Suspender
-                  </Button>
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

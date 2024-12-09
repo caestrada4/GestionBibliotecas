@@ -31,12 +31,12 @@ const BooksPage = () => {
   const [newBook, setNewBook] = useState({
     title: "",
     author: "",
-    isbn: "",
     category: "",
-    quantity: "",
+    available: true,
   });
   const [editBook, setEditBook] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -47,7 +47,10 @@ const BooksPage = () => {
   const fetchBooks = async () => {
     try {
       const response = await API.get("/books");
-      setBooks(response.data);
+      const sortedBooks = response.data.sort((a, b) =>
+        a.title.localeCompare(b.title)
+      );
+      setBooks(sortedBooks);
     } catch (error) {
       console.error("Error al obtener libros:", error);
     }
@@ -70,11 +73,20 @@ const BooksPage = () => {
     setNewBook((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddBookOpen = () => {
+    setIsAddOpen(true);
+  };
+
+  const handleAddBookClose = () => {
+    setNewBook({ title: "", author: "", category: "", available: true });
+    setIsAddOpen(false);
+  };
+
   const handleAddBook = async () => {
     try {
       await API.post("/books", newBook);
       fetchBooks();
-      setNewBook({ title: "", author: "", isbn: "", category: "", quantity: "" });
+      handleAddBookClose();
     } catch (error) {
       console.error("Error al agregar el libro:", error);
     }
@@ -121,14 +133,12 @@ const BooksPage = () => {
       const lowerSearch = search.toLowerCase();
       return (
         book?.title?.toLowerCase().includes(lowerSearch) ||
-        book?.author?.toLowerCase().includes(lowerSearch) ||
-        book?.isbn?.includes(lowerSearch)
+        book?.author?.toLowerCase().includes(lowerSearch)
       );
     })
     .filter((book) => (filterCategory ? book.category === filterCategory : true))
-    .filter((book) => (filterStatus ? book.status === filterStatus : true));
+    .filter((book) => (filterStatus ? book.available.toString() === filterStatus : true));
 
-  // Lógica de paginación
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedBooks = filteredBooks.slice(startIndex, startIndex + itemsPerPage);
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
@@ -142,13 +152,13 @@ const BooksPage = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Libros
       </Typography>
-      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
         <TextField
-          label="Buscar por título, autor o ISBN"
+          label="Buscar por título o autor"
           variant="outlined"
           value={search}
           onChange={handleSearch}
-          style={{ flex: 1 }}
+          style={{ flex: 1, marginRight: "20px" }}
         />
         <FormControl variant="outlined" style={{ minWidth: "150px" }}>
           <InputLabel>Categoría</InputLabel>
@@ -163,20 +173,27 @@ const BooksPage = () => {
           <InputLabel>Estado</InputLabel>
           <Select value={filterStatus} onChange={handleFilterStatus} label="Estado">
             <MenuItem value="">Todos</MenuItem>
-            <MenuItem value="Disponible">Disponible</MenuItem>
-            <MenuItem value="Prestado">Prestado</MenuItem>
+            <MenuItem value="true">Disponible</MenuItem>
+            <MenuItem value="false">No disponible</MenuItem>
           </Select>
         </FormControl>
       </div>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleAddBookOpen}
+        style={{ marginBottom: "20px" }}
+      >
+        Agregar Libro
+      </Button>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Título</TableCell>
               <TableCell>Autor</TableCell>
-              <TableCell>ISBN</TableCell>
               <TableCell>Categoría</TableCell>
-              <TableCell>Cantidad</TableCell>
+              <TableCell>Disponible</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -185,9 +202,10 @@ const BooksPage = () => {
               <TableRow key={book.id}>
                 <TableCell>{book.title}</TableCell>
                 <TableCell>{book.author}</TableCell>
-                <TableCell>{book.isbn}</TableCell>
                 <TableCell>{book.category}</TableCell>
-                <TableCell>{book.quantity}</TableCell>
+                <TableCell>
+                  {book.available ? "Disponible" : "No disponible"}
+                </TableCell>
                 <TableCell>
                   <Button color="primary" onClick={() => handleEditBookOpen(book)}>
                     Editar
@@ -202,58 +220,63 @@ const BooksPage = () => {
         </Table>
       </TableContainer>
 
-      {/* Paginación */}
       <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
         <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
       </Box>
 
-      {/* Formulario para agregar un nuevo libro */}
-      <div style={{ marginTop: "20px" }}>
-        <Typography variant="h6">Agregar un nuevo libro</Typography>
-        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+      {/* Modal para agregar un nuevo libro */}
+      <Dialog open={isAddOpen} onClose={handleAddBookClose}>
+        <DialogTitle>Agregar Nuevo Libro</DialogTitle>
+        <DialogContent>
           <TextField
             label="Título"
             name="title"
             value={newBook.title}
             onChange={handleNewBookChange}
-            variant="outlined"
+            fullWidth
+            margin="dense"
           />
           <TextField
             label="Autor"
             name="author"
             value={newBook.author}
             onChange={handleNewBookChange}
-            variant="outlined"
-          />
-          <TextField
-            label="ISBN"
-            name="isbn"
-            value={newBook.isbn}
-            onChange={handleNewBookChange}
-            variant="outlined"
+            fullWidth
+            margin="dense"
           />
           <TextField
             label="Categoría"
             name="category"
             value={newBook.category}
             onChange={handleNewBookChange}
-            variant="outlined"
+            fullWidth
+            margin="dense"
           />
-          <TextField
-            label="Cantidad"
-            name="quantity"
-            value={newBook.quantity}
-            onChange={handleNewBookChange}
-            variant="outlined"
-            type="number"
-          />
-          <Button variant="contained" color="primary" onClick={handleAddBook}>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Disponible</InputLabel>
+            <Select
+              name="available"
+              value={newBook.available}
+              onChange={(e) =>
+                setNewBook((prev) => ({ ...prev, available: e.target.value }))
+              }
+            >
+              <MenuItem value={true}>Disponible</MenuItem>
+              <MenuItem value={false}>No disponible</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddBookClose} color="secondary">
+            Cancelar
+          </Button>
+          <Button onClick={handleAddBook} color="primary">
             Agregar
           </Button>
-        </div>
-      </div>
+        </DialogActions>
+      </Dialog>
 
-      {/* Diálogo para editar un libro */}
+      {/* Modal para editar un libro */}
       <Dialog open={isEditOpen} onClose={handleEditBookClose}>
         <DialogTitle>Editar Libro</DialogTitle>
         <DialogContent>
@@ -274,14 +297,6 @@ const BooksPage = () => {
             margin="dense"
           />
           <TextField
-            label="ISBN"
-            name="isbn"
-            value={editBook?.isbn || ""}
-            onChange={handleEditBookChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
             label="Categoría"
             name="category"
             value={editBook?.category || ""}
@@ -289,15 +304,19 @@ const BooksPage = () => {
             fullWidth
             margin="dense"
           />
-          <TextField
-            label="Cantidad"
-            name="quantity"
-            value={editBook?.quantity || ""}
-            onChange={handleEditBookChange}
-            fullWidth
-            margin="dense"
-            type="number"
-          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Disponible</InputLabel>
+            <Select
+              name="available"
+              value={editBook?.available || ""}
+              onChange={(e) =>
+                setEditBook((prev) => ({ ...prev, available: e.target.value }))
+              }
+            >
+              <MenuItem value={true}>Disponible</MenuItem>
+              <MenuItem value={false}>No disponible</MenuItem>
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleEditBookClose} color="secondary">
