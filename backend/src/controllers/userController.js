@@ -20,15 +20,19 @@ exports.getUserById = async (req, res) => {
 };
 // En tu controlador de usuarios (userController.js)
 exports.getUsersByLibrary = async (req, res) => {
-  const { library_id } = req.query;
-
   try {
+    const { library_id } = req.query;  // Obtener el library_id de la query string
+
+    // Buscar los usuarios que pertenecen a esa biblioteca
     const users = await User.findAll({
-      where: { library_id },
+      where: {
+        library_id: library_id,  // Filtrar por library_id
+      },
     });
-    res.json(users);
+
+    res.json(users);  // Retornar los usuarios encontrados
   } catch (error) {
-    console.error('Error al obtener usuarios por librería:', error);
+    console.error('Error al obtener usuarios:', error);
     res.status(500).json({ message: 'Error al obtener usuarios' });
   }
 };

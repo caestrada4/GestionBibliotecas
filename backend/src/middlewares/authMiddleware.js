@@ -144,3 +144,15 @@ exports.globalErrorHandler = (err, req, res, next) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+// middleware/libraryAccessMiddleware.js
+
+exports.verifyLibraryAccess = (req, res, next) => {
+  const userLibraryId = req.user.library_id;  // El library_id del usuario autenticado
+  const requestedLibraryId = req.query.library_id;  // El library_id que se pasa en la consulta
+
+  if (userLibraryId !== requestedLibraryId) {
+    return res.status(403).json({ message: 'Acceso denegado: No tienes permiso para ver los usuarios de esta biblioteca.' });
+  }
+
+  next();  // Si la verificación es exitosa, se pasa al siguiente middleware
+};
