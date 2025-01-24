@@ -25,6 +25,7 @@ import {
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
+  const [libraries, setLibraries] = useState([]); // Lista de librerías
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -33,22 +34,37 @@ const UsersPage = () => {
     role: "user",
     isSuspended: false,
     suspensionReason: "",
+    library_id: "", // Agregar librería
   });
   const [editUser, setEditUser] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [selectedLibrary, setSelectedLibrary] = useState(""); // Filtro por librería
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+    fetchLibraries();
+  }, [selectedLibrary]);
 
   const fetchUsers = async () => {
     try {
-      const response = await API.get("/users");
+      const response = await API.get("/users", {
+        params: { library_id: selectedLibrary }, // Usar el parámetro correctamente
+      });
       setUsers(response.data);
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
+    }
+  };
+  
+
+  const fetchLibraries = async () => {
+    try {
+      const response = await API.get("/libraries"); // Asegúrate de tener esta API para obtener librerías
+      setLibraries(response.data);
+    } catch (error) {
+      console.error("Error al obtener librerías:", error);
     }
   };
 
@@ -69,6 +85,7 @@ const UsersPage = () => {
         role: "user",
         isSuspended: false,
         suspensionReason: "",
+        library_id: "", // Reset
       });
     } catch (error) {
       console.error("Error al agregar usuario:", error);
@@ -104,24 +121,22 @@ const UsersPage = () => {
     const justification = prompt("Proporcione una justificación para suspender al usuario:");
     if (justification) {
       try {
-        await API.put(`/users/${id}/suspend`, { justification }); // Verifica este formato
-        fetchUsers(); // Actualiza la lista de usuarios después de suspender
+        await API.put(`/users/${id}/suspend`, { justification });
+        fetchUsers();
       } catch (error) {
         console.error("Error al suspender usuario:", error);
       }
     }
   };
-  
 
   const handleUnsuspendUser = async (id) => {
     try {
-      await API.put(`/users/${id}/unsuspend`); // Verifica esta URL
-      fetchUsers(); // Recarga la lista de usuarios después de reactivar
+      await API.put(`/users/${id}/unsuspend`);
+      fetchUsers();
     } catch (error) {
       console.error("Error al reactivar usuario:", error);
     }
   };
-  
 
   const paginatedUsers = users.slice(
     (currentPage - 1) * itemsPerPage,
@@ -138,6 +153,24 @@ const UsersPage = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Usuarios
       </Typography>
+
+      {/* Filtro por librería */}
+      <FormControl fullWidth margin="dense">
+        <InputLabel>Librería</InputLabel>
+        <Select
+          value={selectedLibrary}
+          onChange={(e) => setSelectedLibrary(e.target.value)}
+          label="Librería"
+        >
+          <MenuItem value="">Todas</MenuItem>
+          {libraries.map((library) => (
+            <MenuItem key={library.id} value={library.id}>
+              {library.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       <TableContainer component={Paper} style={{ marginBottom: "20px" }}>
         <Table>
           <TableHead>
@@ -160,28 +193,19 @@ const UsersPage = () => {
                 <TableCell>{user.userType}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
-                  {user.isSuspended
-                    ? `Suspendido: ${user.suspensionReason}`
-                    : "Activo"}
+                  {user.isSuspended ? `Suspendido: ${user.suspensionReason}` : "Activo"}
                 </TableCell>
                 <TableCell>
                   <Button color="primary" onClick={() => handleEditUserOpen(user)}>
                     Editar
                   </Button>
                   {user.isSuspended ? (
-                    <Button
-                    color="primary"
-                    onClick={() => handleUnsuspendUser(user.id)}
-                    >
-                    Reactivar
+                    <Button color="primary" onClick={() => handleUnsuspendUser(user.id)}>
+                      Reactivar
                     </Button>
-                ) : (
-                    // Botón para suspender al usuario
-                    <Button
-                    color="secondary"
-                    onClick={() => handleSuspendUser(user.id)}
-                    >
-                    Suspender
+                  ) : (
+                    <Button color="secondary" onClick={() => handleSuspendUser(user.id)}>
+                      Suspender
                     </Button>
                   )}
                 </TableCell>
@@ -195,6 +219,7 @@ const UsersPage = () => {
         <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
       </Box>
 
+      {/* Formulario para agregar un nuevo usuario */}
       <div style={{ marginTop: "20px" }}>
         <Typography variant="h6">Registrar un nuevo usuario</Typography>
         <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
@@ -240,12 +265,31 @@ const UsersPage = () => {
               <MenuItem value="admin">Administrador</MenuItem>
             </Select>
           </FormControl>
+
+          {/* Seleccionar la librería para el usuario */}
+          <FormControl variant="outlined" style={{ minWidth: "150px" }}>
+            <InputLabel>Librería</InputLabel>
+            <Select
+              name="library_id"
+              value={newUser.library_id}
+              onChange={handleNewUserChange}
+              label="Librería"
+            >
+              {libraries.map((library) => (
+                <MenuItem key={library.id} value={library.id}>
+                  {library.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <Button variant="contained" color="primary" onClick={handleAddUser}>
             Agregar
           </Button>
         </div>
       </div>
 
+      {/* Editar usuario */}
       <Dialog open={isEditOpen} onClose={handleEditUserClose}>
         <DialogTitle>Editar Usuario</DialogTitle>
         <DialogContent>
