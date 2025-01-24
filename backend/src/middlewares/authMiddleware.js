@@ -12,22 +12,20 @@ exports.verifyToken = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-
-    // Verificar y decodificar el token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
 
-    // Buscar el usuario en la base de datos
+    // Adjuntar `library_id` al usuario para acceder a los datos correspondientes
     const user = await User.findByPk(decoded.id);
     if (!user) {
       return res.status(401).json({ message: 'Usuario no encontrado' });
     }
 
-    // Adjuntar información del usuario a la solicitud
     req.user = {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role, // Role necesario para verificar permisos en las rutas
+      role: user.role,
+      library_id: user.library_id, // Asociar `library_id` al usuario
     };
 
     next();
