@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: library_db
+      MYSQL_USER: useradmin
+      MYSQL_PASSWORD: Andrew254195
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    environment:
+      DB_NAME: library_db
+      DB_USER: useradmin
+      DB_PASS: Andrew254195
+      DB_HOST: db
+      DB_PORT: 3307
+      JWT_SECRET: Andrew254195
+      REST_PORT: 3000
+
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend-2
+    container_name: frontend
+    ports:
+      - "3001:3000"  # El puerto 3001 de tu máquina local se mapea al puerto 3000 dentro del contenedor
+    depends_on:
+      - backend
+
+volumes:
+  db-data:

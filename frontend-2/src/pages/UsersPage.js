@@ -46,17 +46,32 @@ const UsersPage = () => {
     fetchUsers();
     fetchLibraries();
   }, [selectedLibrary]);
-
+  
   const fetchUsers = async () => {
     try {
+      const token = localStorage.getItem('token'); // Recuperar el token de localStorage
+  
+      // Verificar que el token esté disponible
+      if (!token) {
+        console.error("No se encontró el token");
+        return;
+      }
+  
+      // Realizar la solicitud GET para obtener los usuarios
       const response = await API.get("/users", {
-        params: { library_id: selectedLibrary }, // Usar el parámetro correctamente
+        headers: {
+          Authorization: `Bearer ${token}`,  // Enviar el token en los encabezados de la solicitud
+        },
+        params: { library_id: selectedLibrary },  // Enviar el library_id para filtrar usuarios
       });
-      setUsers(response.data);
+  
+      setUsers(response.data); // Almacenar los usuarios en el estado
     } catch (error) {
-      console.error("Error al obtener usuarios:", error);
+      console.error("Error al obtener usuarios:", error.response?.data || error.message);
+      // Puedes agregar aquí un mensaje para mostrar al usuario si el error fue muy específico.
     }
   };
+  
   
 
   const fetchLibraries = async () => {

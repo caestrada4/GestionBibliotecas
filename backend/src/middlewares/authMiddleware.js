@@ -147,12 +147,19 @@ exports.globalErrorHandler = (err, req, res, next) => {
 // middleware/libraryAccessMiddleware.js
 
 exports.verifyLibraryAccess = (req, res, next) => {
-  const userLibraryId = req.user.library_id;  // El library_id del usuario autenticado
-  const requestedLibraryId = req.query.library_id;  // El library_id que se pasa en la consulta
+  // Obtener el library_id del usuario desde el objeto req.user, que fue establecido en el middleware verifyToken
+  const userLibraryId = req.user.library_id;
 
+  // Obtener el library_id de la consulta de la ruta (por ejemplo, de la URL como parámetro)
+  const requestedLibraryId = req.query.library_id;
+
+  // Comprobar si el usuario tiene acceso a la biblioteca solicitada
   if (userLibraryId !== requestedLibraryId) {
-    return res.status(403).json({ message: 'Acceso denegado: No tienes permiso para ver los usuarios de esta biblioteca.' });
+    return res.status(403).json({
+      message: 'Acceso denegado: No tienes permiso para ver los usuarios de esta biblioteca.',
+    });
   }
 
-  next();  // Si la verificación es exitosa, se pasa al siguiente middleware
+  // Si el usuario tiene permiso, continuar con la ejecución de la siguiente función de middleware o controlador
+  next();
 };

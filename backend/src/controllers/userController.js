@@ -19,21 +19,25 @@ exports.getUserById = async (req, res) => {
   }
 };
 // En tu controlador de usuarios (userController.js)
+// Controlador para obtener usuarios por librería
 exports.getUsersByLibrary = async (req, res) => {
-  try {
-    const { library_id } = req.query;  // Obtener el library_id de la query string
+  const { library_id } = req.query; // Obtener el library_id desde los parámetros de la consulta
 
-    // Buscar los usuarios que pertenecen a esa biblioteca
+  if (!library_id) {
+    return res.status(400).json({ message: 'El library_id es obligatorio' });
+  }
+
+  try {
+    // Buscar usuarios donde el library_id coincida
     const users = await User.findAll({
-      where: {
-        library_id: library_id,  // Filtrar por library_id
-      },
+      where: { library_id },
+      include: [{ model: Library }],  // Incluir detalles de la librería (opcional)
     });
 
     res.json(users);  // Retornar los usuarios encontrados
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
-    res.status(500).json({ message: 'Error al obtener usuarios' });
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
