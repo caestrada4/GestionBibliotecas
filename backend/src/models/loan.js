@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/config');
 const User = require('./user');
 const Book = require('./book');
+const Library = require('./library');  // Relación con librería
 
 const Loan = sequelize.define('Loan', {
   loanDate: {
@@ -22,6 +23,14 @@ const Loan = sequelize.define('Loan', {
           throw new Error('La fecha de devolución no puede ser anterior a la fecha de préstamo');
         }
       },
+    },
+  },
+  library_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Library,
+      key: 'id',
     },
   },
   fine: {
@@ -52,6 +61,7 @@ Loan.belongsTo(User, {
   },
   onDelete: 'CASCADE',
 });
+Loan.belongsTo(Library, { foreignKey: 'library_id' });
 
 Loan.belongsTo(Book, {
   foreignKey: {

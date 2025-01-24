@@ -20,21 +20,21 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
+  const { name, email, password, userType, role, library_id } = req.body;
+
+  // Validar que el `library_id` esté presente y que el usuario sea admin
+  if (!library_id) {
+    return res.status(400).json({ message: 'El ID de la librería es necesario' });
+  }
+
   try {
-    const { name, email, password, userType, role } = req.body;
-
-    // Validar que el rol sea asignado solo por administradores
-    if (role && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'No tienes permiso para asignar roles.' });
-    }
-
-    // Crear el nuevo usuario
     const newUser = await User.create({
       name,
       email,
       password,
       userType,
-      role: role || 'user', // Por defecto, se asigna el rol 'user' si no se especifica
+      role: role || 'user',  // Si no se pasa un rol, el valor predeterminado es 'user'
+      library_id, // Asociar el usuario con una librería
     });
 
     res.status(201).json(newUser);
@@ -42,6 +42,7 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.updateUser = async (req, res) => {
   try {

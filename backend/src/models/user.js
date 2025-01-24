@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/config');
-
+const Library = require('./library');  // Relación con librería
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.INTEGER,
@@ -20,6 +20,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  library_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Library,
+      key: 'id',
+    },
+  },  
   role: {
     type: DataTypes.ENUM('admin', 'librarian', 'user'),
     allowNull: false,
@@ -39,5 +47,6 @@ const User = sequelize.define('User', {
     allowNull: true, // Permite almacenar la justificación de la suspensión
   },
 });
+User.belongsTo(Library, { foreignKey: 'library_id' });
 
 module.exports = User;

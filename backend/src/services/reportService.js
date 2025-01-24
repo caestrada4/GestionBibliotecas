@@ -7,9 +7,10 @@ const reportService = {
   ReportService: {
     ReportPort: {
       // Generar reporte de préstamos activos
-      GetActiveLoansReport: async ({ startDate, endDate }) => {
+      // Generar reporte de préstamos activos
+      GetActiveLoansReport: async ({ startDate, endDate, libraryId }) => {
         try {
-          const whereClause = {};
+          const whereClause = { library_id: libraryId };
           if (startDate || endDate) {
             whereClause.loanDate = {};
             if (startDate) whereClause.loanDate.$gte = new Date(startDate);
