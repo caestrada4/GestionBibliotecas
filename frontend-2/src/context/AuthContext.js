@@ -7,6 +7,8 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [libraryId, setLibraryId] = useState(null); // Nuevo estado para el library_id
+
   const [loading, setLoading] = useState(true); // Indicador de carga inicial
   const navigate = useNavigate();
 
@@ -14,7 +16,11 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    setLibraryId(null); // Limpiar el library_id al cerrar sesión
+
     localStorage.removeItem("token");
+    localStorage.removeItem("library_id");
+
     delete API.defaults.headers.common["Authorization"]; // Eliminamos el token de las cabeceras
     navigate("/login"); // Redirigir al Login
   }, [navigate]);
@@ -44,7 +50,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (userData, tokenData) => {
     setUser(userData);
     setToken(tokenData);
+    setLibraryId(libraryId); // Guardar el library_id cuando el usuario inicia sesión
     localStorage.setItem("token", tokenData);
+    localStorage.setItem("library_id", libraryId);
+
     API.defaults.headers.common["Authorization"] = `Bearer ${tokenData}`; // Configuramos el token para futuras solicitudes
     navigate("/"); // Redirigir al Dashboard
   };
@@ -55,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, libraryId, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

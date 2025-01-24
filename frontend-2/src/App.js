@@ -7,6 +7,8 @@ import UsersPage from "./pages/UsersPage";
 import LoansPage from "./pages/LoansPage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
+import AdminPanel from "./pages/AdminPanel";  // Admin Panel para gestionar librerías
+
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -52,6 +54,14 @@ function App() {
           element={
             <PrivateRoute>
               <LoansPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute>
+              <AdminPanel />
             </PrivateRoute>
           }
         />
