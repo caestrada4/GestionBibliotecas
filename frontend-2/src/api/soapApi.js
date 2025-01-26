@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const SOAP_URL = "http://localhost:3000/loanService";
+const SOAP_URL = "https://azure-library-project-back-faccasd8b3eueycs.eastus2-01.azurewebsites.net/loanService";
 
 // Obtener el token almacenado en el localStorage
 const getAuthToken = () => localStorage.getItem("token");

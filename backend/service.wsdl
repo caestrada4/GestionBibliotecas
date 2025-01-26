@@ -138,7 +138,7 @@
   <!-- Servicio -->
   <service name="LoanService">
     <port name="LoanPort" binding="tns:LoanBinding">
-      <soap:address location="http://localhost:3000/loanService"/>
+      <soap:address location="http://azure-library-project-back-faccasd8b3eueycs.eastus2-01.azurewebsites.net/loanService"/>
     </port>
   </service>
 </definitions>

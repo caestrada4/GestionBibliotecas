@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "https://azure-library-project-back-faccasd8b3eueycs.eastus2-01.azurewebsites.net/api",
 });
 
 export default API;

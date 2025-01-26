@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:3000/api", // Cambia la URL según tu backend
+  baseURL: "https://azure-library-project-back-faccasd8b3eueycs.eastus2-01.websites.net/api", // Cambia la URL según tu backend
 });
 
 export const login = async (email, password) => {
