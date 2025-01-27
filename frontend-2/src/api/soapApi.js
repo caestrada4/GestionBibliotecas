@@ -17,7 +17,7 @@ const headers = () => ({
  */
 export const getUserLoanHistorySOAP = async (userId) => {
   const xml = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://example.com/LoanService/">
+    <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="https://example.com/LoanService/">
       <soapenv:Header/>
       <soapenv:Body>
         <tns:GetUserLoanHistory>
@@ -47,7 +47,7 @@ export const getUserLoanHistorySOAP = async (userId) => {
  */
 export const createLoanSOAP = async (userId, bookId, loanDate, returnDate) => {
   const xml = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://example.com/LoanService/">
+    <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="https://example.com/LoanService/">
       <soapenv:Header/>
       <soapenv:Body>
         <tns:CreateLoan>
@@ -77,7 +77,7 @@ export const createLoanSOAP = async (userId, bookId, loanDate, returnDate) => {
  */
 export const returnLoanSOAP = async (loanId) => {
   const xml = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://example.com/LoanService/">
+    <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="https://example.com/LoanService/">
       <soapenv:Header/>
       <soapenv:Body>
         <tns:ReturnLoan>
@@ -103,7 +103,7 @@ export const returnLoanSOAP = async (loanId) => {
  */
 export const getActiveLoansSOAP = async () => {
   const xml = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://example.com/LoanService/">
+    <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="https://example.com/LoanService/">
       <soapenv:Header/>
       <soapenv:Body>
         <tns:GetActiveLoans/>

@@ -94,7 +94,7 @@ exports.verifySOAPRequest = (req, res, next) => {
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         console.error('Token no proporcionado en solicitud SOAP');
         return res.status(401).send(`
-          <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+          <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/">
             <soapenv:Body>
               <soapenv:Fault>
                 <faultcode>SOAP-ENV:Client</faultcode>
@@ -112,7 +112,7 @@ exports.verifySOAPRequest = (req, res, next) => {
     } catch (error) {
       console.error('Error al verificar token para SOAP:', error.message);
       return res.status(401).send(`
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/">
           <soapenv:Body>
             <soapenv:Fault>
               <faultcode>SOAP-ENV:Client</faultcode>
@@ -131,7 +131,7 @@ exports.globalErrorHandler = (err, req, res, next) => {
   console.error('Error no manejado:', err.stack);
   if (req.is('xml') || req.headers['content-type'] === 'text/xml') {
     res.status(500).send(`
-      <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+      <soapenv:Envelope xmlns:soapenv="https://schemas.xmlsoap.org/soap/envelope/">
         <soapenv:Body>
           <soapenv:Fault>
             <faultcode>SOAP-ENV:Server</faultcode>

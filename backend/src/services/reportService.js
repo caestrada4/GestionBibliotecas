@@ -78,10 +78,10 @@ const reportService = {
 // Definición del archivo WSDL para reportes
 const wsdl = `
 <definitions name="ReportService"
-  xmlns="http://schemas.xmlsoap.org/wsdl/"
-  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-  xmlns:tns="http://example.com/ReportService/"
-  targetNamespace="http://example.com/ReportService/">
+  xmlns="https://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="https://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="https://example.com/ReportService/"
+  targetNamespace="https://example.com/ReportService/">
   <message name="GetActiveLoansReportRequest">
     <part name="startDate" type="xsd:string"/>
     <part name="endDate" type="xsd:string"/>

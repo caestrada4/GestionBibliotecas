@@ -19,7 +19,7 @@ const app = express();
 // Configuración de CORS
 app.use(
   cors({
-    origin: "https://azure-library-project-front-d6b9fxg0ddfycmd2.eastus2-01.azurewebsites.net", // Dominio del end
+    origin: "https://azure-library-project-front-d6b9fxg0ddfycmd2.eastus2-01.azurewebsites.net", // Dominio del frontend
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -72,7 +72,7 @@ app.get('/loanService?wsdl', (req, res) => {
 // Inicia el servidor en el puerto compartido
 const port = process.env.REST_PORT || 3000;
 app.listen(port, () => {
-  console.log(`REST API and SOAP Service running on http://localhost:${port}`);
+  console.log(`REST API and SOAP Service running`);
 });
 
 // Manejo de errores global para SOAP y REST
