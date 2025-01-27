@@ -1,9 +1,14 @@
 const Book = require('../models/book');
 
 // Obtener todos los libros
+// Obtener todos los libros de la biblioteca del usuario autenticado
 exports.getAllBooks = async (req, res) => {
   try {
-    const books = await Book.findAll();
+    const library_id = req.user.library_id; // Obtener el library_id del usuario autenticado
+
+    // Obtener los libros donde el library_id coincida
+    const books = await Book.findAll({ where: { library_id } });
+
     res.json(books);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los libros', error });
@@ -22,14 +27,28 @@ exports.getBookById = async (req, res) => {
 };
 
 // Crear un libro
+// Crear un libro
 exports.createBook = async (req, res) => {
   try {
-    const book = await Book.create(req.body);
+    const { title, author, category, available } = req.body;
+    const library_id = req.user.library_id; // Obtener el library_id del usuario autenticado
+
+    // Crear el libro con el library_id asociado
+    const book = await Book.create({
+      title,
+      author,
+      category,
+      available,
+      library_id,  // Asociar el libro con el library_id del usuario autenticado
+    });
+
     res.status(201).json(book);
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear el libro', error });
+    console.error("Error al crear el libro:", error);
+    res.status(500).json({ message: "Error al crear el libro", error });
   }
 };
+
 
 // Actualizar un libro
 exports.updateBook = async (req, res) => {

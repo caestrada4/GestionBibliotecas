@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/api";
+import jwt_decode from "jwt-decode"; // Para decodificar el token JWT
 import {
   Table,
   TableBody,
@@ -33,12 +34,25 @@ const BooksPage = () => {
     author: "",
     category: "",
     available: true,
+    library_id: "",  // Añadir el campo library_id
   });
   const [editBook, setEditBook] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Obtener el library_id del token JWT
+  const getLibraryIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwt_decode(token);
+      return decoded.library_id; // Usamos el library_id del token
+    }
+    return null;
+  };
+
+  const libraryId = getLibraryIdFromToken(); // Obtener el library_id
 
   useEffect(() => {
     fetchBooks();
@@ -74,17 +88,18 @@ const BooksPage = () => {
   };
 
   const handleAddBookOpen = () => {
+    setNewBook((prev) => ({ ...prev, library_id: libraryId })); // Asignar el library_id al libro
     setIsAddOpen(true);
   };
 
   const handleAddBookClose = () => {
-    setNewBook({ title: "", author: "", category: "", available: true });
+    setNewBook({ title: "", author: "", category: "", available: true, library_id: libraryId });
     setIsAddOpen(false);
   };
 
   const handleAddBook = async () => {
     try {
-      await API.post("/books", newBook);
+      await API.post("/books", newBook); // El nuevo libro ahora incluye el library_id
       fetchBooks();
       handleAddBookClose();
     } catch (error) {
