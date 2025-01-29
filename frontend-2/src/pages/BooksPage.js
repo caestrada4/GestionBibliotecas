@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/api";
-import jwt_decode from "jwt-decode"; // Para decodificar el token JWT
+import { jwtDecode } from "jwt-decode";
 import {
   Table,
   TableBody,
@@ -46,7 +46,7 @@ const BooksPage = () => {
   const getLibraryIdFromToken = () => {
     const token = localStorage.getItem("token");
     if (token) {
-      const decoded = jwt_decode(token);
+      const decoded = jwtDecode(token);
       return decoded.library_id; // Usamos el library_id del token
     }
     return null;

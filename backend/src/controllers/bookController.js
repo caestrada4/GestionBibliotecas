@@ -1,16 +1,28 @@
 const Book = require('../models/book');
+const { verifyToken } = require('../middlewares/authMiddleware'); // Importa el middleware de autenticación si es necesario
 
-// Obtener todos los libros
 // Obtener todos los libros de la biblioteca del usuario autenticado
 exports.getAllBooks = async (req, res) => {
   try {
     const library_id = req.user.library_id; // Obtener el library_id del usuario autenticado
 
+    // Verificar si el library_id está disponible
+    if (!library_id) {
+      return res.status(400).json({ message: 'El library_id no está disponible.' });
+    }
+
     // Obtener los libros donde el library_id coincida
-    const books = await Book.findAll({ where: { library_id } });
+    const books = await Book.findAll({
+      where: { library_id }, // Filtrar los libros por el library_id del usuario autenticado
+    });
+
+    if (books.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron libros para esta biblioteca.' });
+    }
 
     res.json(books);
   } catch (error) {
+    console.error("Error al obtener los libros:", error);
     res.status(500).json({ message: 'Error al obtener los libros', error });
   }
 };
@@ -27,11 +39,15 @@ exports.getBookById = async (req, res) => {
 };
 
 // Crear un libro
-// Crear un libro
 exports.createBook = async (req, res) => {
   try {
     const { title, author, category, available } = req.body;
     const library_id = req.user.library_id; // Obtener el library_id del usuario autenticado
+
+    // Verificar que el library_id está disponible
+    if (!library_id) {
+      return res.status(400).json({ message: 'El ID de la biblioteca no está disponible.' });
+    }
 
     // Crear el libro con el library_id asociado
     const book = await Book.create({
@@ -48,7 +64,6 @@ exports.createBook = async (req, res) => {
     res.status(500).json({ message: "Error al crear el libro", error });
   }
 };
-
 
 // Actualizar un libro
 exports.updateBook = async (req, res) => {

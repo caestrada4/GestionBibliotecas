@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 // Middleware para verificar el token JWT (para solicitudes REST)
+
+
 // Middleware para verificar el token JWT (para solicitudes REST)
 exports.verifyToken = async (req, res, next) => {
   try {
@@ -12,7 +14,7 @@ exports.verifyToken = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret'); // Asegúrate de usar una clave secreta segura
 
     // Adjuntar `library_id` al usuario para acceder a los datos correspondientes
     const user = await User.findByPk(decoded.id);
@@ -20,6 +22,7 @@ exports.verifyToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Usuario no encontrado' });
     }
 
+    // Agregar información del usuario y `library_id` al objeto `req.user`
     req.user = {
       id: user.id,
       name: user.name,
@@ -28,7 +31,7 @@ exports.verifyToken = async (req, res, next) => {
       library_id: user.library_id, // Asociar `library_id` al usuario
     };
 
-    next();
+    next(); // Continuar con el siguiente middleware o ruta
   } catch (error) {
     console.error('Error al verificar el token:', error.message);
     return res.status(401).json({ message: 'Token inválido o expirado' });
@@ -106,7 +109,7 @@ exports.verifySOAPRequest = (req, res, next) => {
       }
 
       const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'Andrew254195');
       req.user = decoded; // Agregar usuario decodificado a la solicitud
       return next();
     } catch (error) {

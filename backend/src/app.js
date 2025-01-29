@@ -19,7 +19,7 @@ const app = express();
 // Configuración de CORS
 app.use(
   cors({
-    origin: "https://azure-library-project-front-d6b9fxg0ddfycmd2.eastus2-01.azurewebsites.net", // Dominio del frontend
+    origin: "http://localhost:3001", // Dominio del frontend
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

@@ -52,7 +52,11 @@ exports.login = async (req, res) => {
 // Validar Token
 exports.validateToken = async (req, res) => {
   try {
-    // El middleware verifyToken ya validó el token y añadió el usuario a req.user
+    // Verificar si req.user está definido (en caso de que algo falle en el middleware verifyToken)
+    if (!req.user) {
+      return res.status(401).json({ message: 'Token inválido o expirado' });
+    }
+
     const user = req.user;
 
     res.json({
@@ -62,6 +66,7 @@ exports.validateToken = async (req, res) => {
         email: user.email,
         role: user.role,
         userType: user.userType,
+        library_id: user.library_id,  // Agregar el `library_id` si es necesario
       },
     });
   } catch (error) {
@@ -69,6 +74,7 @@ exports.validateToken = async (req, res) => {
     res.status(500).json({ message: 'Error al validar el token' });
   }
 };
+
 
 // Registrar usuario
 exports.registerUser = async (req, res) => {
